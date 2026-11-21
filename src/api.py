@@ -5,6 +5,7 @@ from urllib.error import URLError, HTTPError
 import json
 
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from logging_config import get_logger
@@ -16,7 +17,12 @@ MODEL_PATH = PROJECT_ROOT / "models" / "crisisproof_model_v1.joblib"
 crisis_engine = CrisisPredictor(MODEL_PATH)
 
 app = FastAPI(title="CRISISPROOF API", description="Crisis intelligence prototype API", version="1.0.0")
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 class PredictionRequest(BaseModel):
     tweet: str = Field(min_length=1, max_length=5000)
 
