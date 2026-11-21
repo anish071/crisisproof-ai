@@ -1,0 +1,1 @@
+"""CRISISPROOF core source package."""
