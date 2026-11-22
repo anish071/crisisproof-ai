@@ -655,6 +655,29 @@ function App() {
     </p>
   )}
 </section>
+      <button
+  type="button"
+  className="cp-button"
+  onClick={() => {
+    const intro = new SpeechSynthesisUtterance(
+      "When disaster strikes, every message matters. CrisisProof AI uses machine learning to classify disaster-related messages and brings live earthquake updates into focus. Analyze a message, explore the feed, and review your results. CrisisProof AI — turning information into awareness. This is a prototype for information support, not emergency response."
+    )
+
+    const voices = window.speechSynthesis.getVoices()
+    const femaleVoice = voices.find((voice) =>
+      /female|woman|samantha|zira|karen|victoria/i.test(voice.name)
+    )
+
+    if (femaleVoice) intro.voice = femaleVoice
+    intro.rate = 0.95
+    intro.pitch = 1.05
+
+    window.speechSynthesis.cancel()
+    window.speechSynthesis.speak(intro)
+  }}
+>
+  Play Launch Briefing
+</button>
 
       <footer className="cp-foot">
         <span>CRISISPROOF AI · COMMAND INTERFACE PROTOTYPE</span>
