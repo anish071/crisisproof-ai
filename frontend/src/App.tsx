@@ -395,42 +395,42 @@ function App() {
         <button
       type="button"
       onClick={() => {
-        const headers = [
-          'Message',
-          'Prediction',
-          'Classification',
-          'Decision Score',
-          'Threshold',
-        ];
+  const headers = [
+    'Message',
+    'Prediction',
+    'Classification',
+    'Decision Score',
+    'Threshold',
+  ];
 
-        const values = [
-          submittedTweet,
-          prediction.prediction,
-          prediction.classification,
-          prediction.decision_score,
-          prediction.threshold,
-        ];
+  const escapeCsv = (value: unknown) =>
+    `"${String(value ?? '').replace(/"/g, '""')}"`;
 
-        const escapeCsv = (value: unknown) =>
-          `"${String(value ?? '').replace(/"/g, '""')}"`;
+  const rows = reportHistory.map(({ message, prediction }) => [
+    message,
+    prediction.prediction,
+    prediction.classification,
+    prediction.decision_score,
+    prediction.threshold,
+  ]);
 
-        const csv = [
-          headers.map(escapeCsv).join(','),
-          values.map(escapeCsv).join(','),
-        ].join('\r\n');
+  const csv = [
+    headers.map(escapeCsv).join(','),
+    ...rows.map((row) => row.map(escapeCsv).join(',')),
+  ].join('\r\n');
 
-        const blob = new Blob(['\uFEFF' + csv], {
-          type: 'text/csv;charset=utf-8;',
-        });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
+  const blob = new Blob(['\uFEFF' + csv], {
+    type: 'text/csv;charset=utf-8;',
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
 
-        link.href = url;
-        link.download = 'crisisproof-result.csv';
-        link.click();
+  link.href = url;
+  link.download = 'crisisproof-history.csv';
+  link.click();
 
-        URL.revokeObjectURL(url);
-      }}
+  URL.revokeObjectURL(url);
+}}
     >
       Download Result (CSV)
     </button>
