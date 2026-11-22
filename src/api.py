@@ -52,25 +52,42 @@ def _usgs_events(period: str):
     start = now - (timedelta(days=1) if period == "day" else timedelta(days=7))
     start_text = start.strftime("%Y-%m-%dT%H:%M:%S")
     end_text = now.strftime("%Y-%m-%dT%H:%M:%S")
-    url = ("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson"
-           f"&starttime={start_text}&endtime={end_text}&orderby=time&limit=100")
-    request = Request(url, headers={"User-Agent":"CRISISPROOF/1.0"})
+
+    url = (
+        "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson"
+        f"&starttime={start_text}&endtime={end_text}&orderby=time&limit=100"
+    )
+    request = Request(url, headers={"User-Agent": "CRISISPROOF/1.0"})
+
     try:
         with urlopen(request, timeout=12) as response:
             payload = json.loads(response.read().decode("utf-8"))
     except (HTTPError, URLError, TimeoutError, json.JSONDecodeError) as exc:
         logger.warning("USGS feed unavailable: %s", exc)
-        raise HTTPException(status_code=502, detail="USGS earthquake feed is temporarily unavailable") from exc
+        raise HTTPException(
+            status_code=502,
+            detail="USGS earthquake feed is temporarily unavailable",
+        ) from exc
+
     events = []
+
     for item in payload.get("features", []):
         props = item.get("properties", {})
+        geometry = item.get("geometry") or {}
+        coordinates = geometry.get("coordinates") or []
+
         events.append({
             "event_id": item.get("id", "unknown"),
             "magnitude": props.get("mag"),
             "place": props.get("place") or "Unknown location",
-            "time_utc": datetime.fromtimestamp((props.get("time") or 0) / 1000, timezone.utc).isoformat(),
-            "source_url": props.get("url") or "https://earthquake.usgs.gov/"
+            "time_utc": datetime.fromtimestamp(
+                (props.get("time") or 0) / 1000, timezone.utc
+            ).isoformat(),
+            "source_url": props.get("url") or "https://earthquake.usgs.gov/",
+            "longitude": coordinates[0] if len(coordinates) > 0 else None,
+            "latitude": coordinates[1] if len(coordinates) > 1 else None,
         })
+
     return events
 
 @app.get("/earthquakes")
