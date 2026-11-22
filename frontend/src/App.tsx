@@ -622,6 +622,29 @@ function App() {
         </div>
       </section>
 
+      {/* Reports */}
+<section className="cp-panel cp-report" id="reports">
+  <div className="cp-head">
+    <h2>Reports</h2>
+    <span className="cp-tag">Analysis History</span>
+  </div>
+
+  {prediction ? (
+    <div className="cp-result">
+      <p><strong>Message:</strong> {submittedTweet}</p>
+      <small>Model output · class {prediction.prediction}</small>
+      <strong>{prediction.classification}</strong>
+      <span>
+        Decision score {prediction.decision_score.toFixed(3)} · threshold {prediction.threshold}
+      </span>
+    </div>
+  ) : (
+    <p className="cp-note">
+      Run an analysis first. Your latest result will appear here.
+    </p>
+  )}
+</section>
+
       <footer className="cp-foot">
         <span>CRISISPROOF AI · COMMAND INTERFACE PROTOTYPE</span>
         <span>USGS LIVE FEED + HISTORICAL TEXT MODEL · NOT FOR EMERGENCY DISPATCH · HUMAN REVIEW REQUIRED</span>
