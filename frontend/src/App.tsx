@@ -3,7 +3,9 @@ import type { CSSProperties, FormEvent } from 'react'
 import './App.css'
 import CommandRoom from './CommandRoom'
 import Icon from './Icon'
-const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
+const API_BASE = import.meta.env.VITE_API_BASE_URL
+  ? import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '')
+  : '/api'
 
 /* ---------- API types (unchanged: same backend, same endpoints) ---------- */
 
@@ -87,9 +89,9 @@ function App() {
     async function loadDashboard() {
       try {
         const responses = await Promise.all([
-          fetch(`${API_BASE}/api/health`),
-          fetch(`${API_BASE}/api/earthquakes?period=day`),
-          fetch(`${API_BASE}/api/earthquakes/summary?period=day`),
+          fetch(`${API_BASE}/health`),
+          fetch(`${API_BASE}/earthquakes?period=day`),
+          fetch(`${API_BASE}/earthquakes/summary?period=day`),
         ])
 
         if (responses.some((response) => !response.ok)) {
@@ -136,7 +138,7 @@ function App() {
     setPredicting(true)
 
     try {
-      const response = await fetch(`${API_BASE}/api/predict`, {
+      const response = await fetch(`${API_BASE}/predict`,  {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tweet: tweet.trim() }),
