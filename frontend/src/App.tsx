@@ -243,12 +243,12 @@ function App() {
           <a href="#ai-analysis">
             <Icon name="flask" /> AI Analysis
           </a>
-          <span className="off" title="Not connected yet">
+          <a href="#simulations">
             <Icon name="layers" /> Simulations
-          </span>
-          <span className="off" title="Not connected yet">
+          </a>
+          <a href="#reports">
             <Icon name="report" /> Reports
-          </span>
+          </a>
         </nav>
 
         <div className="cp-user">
@@ -340,20 +340,44 @@ function App() {
             )}
 
             {prediction ? (
-              <div className="cp-result">
-                <p><strong>Message:</strong> {submittedTweet}</p>
-                <small>Model output · class {prediction.prediction}</small>
-                <strong>{prediction.classification}</strong>
-                <span>
-                  Decision score {prediction.decision_score.toFixed(3)} · threshold {prediction.threshold}
-                </span>
-                <p>Decision score is not a probability. Treat it as a signal for human review.</p>
-              </div>
-            ) : (
-              <p className="cp-note">
-                Uses the trained historical dataset model. It does not confirm an active emergency.
-              </p>
-            )}
+  <div className="cp-result">
+    <p><strong>Message:</strong> {submittedTweet}</p>
+    <small>Model output · class {prediction.prediction}</small>
+    <strong>{prediction.classification}</strong>
+    <span>
+      Decision score {prediction.decision_score.toFixed(3)} · threshold {prediction.threshold}
+    </span>
+    <p>Decision score is not a probability. Treat it as a signal for human review.</p>
+
+    <button
+      type="button"
+      onClick={() => {
+        const resultData = {
+          message: submittedTweet,
+          ...prediction,
+        };
+
+        const blob = new Blob([JSON.stringify(resultData, null, 2)], {
+          type: 'application/json',
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+
+        link.href = url;
+        link.download = 'crisisproof-result.json';
+        link.click();
+
+        URL.revokeObjectURL(url);
+      }}
+    >
+      Download Result
+    </button>
+  </div>
+) : (
+  <p className="cp-note">
+    Uses the trained historical dataset model. It does not confirm an active emergency.
+  </p>
+)}
           </section>
         </aside>
 
