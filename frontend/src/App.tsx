@@ -349,28 +349,47 @@ function App() {
     </span>
     <p>Decision score is not a probability. Treat it as a signal for human review.</p>
 
-    <button
+        <button
       type="button"
       onClick={() => {
-        const resultData = {
-          message: submittedTweet,
-          ...prediction,
-        };
+        const headers = [
+          'Message',
+          'Prediction',
+          'Classification',
+          'Decision Score',
+          'Threshold',
+        ];
 
-        const blob = new Blob([JSON.stringify(resultData, null, 2)], {
-          type: 'application/json',
+        const values = [
+          submittedTweet,
+          prediction.prediction,
+          prediction.classification,
+          prediction.decision_score,
+          prediction.threshold,
+        ];
+
+        const escapeCsv = (value: unknown) =>
+          `"${String(value ?? '').replace(/"/g, '""')}"`;
+
+        const csv = [
+          headers.map(escapeCsv).join(','),
+          values.map(escapeCsv).join(','),
+        ].join('\r\n');
+
+        const blob = new Blob(['\uFEFF' + csv], {
+          type: 'text/csv;charset=utf-8;',
         });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
 
         link.href = url;
-        link.download = 'crisisproof-result.json';
+        link.download = 'crisisproof-result.csv';
         link.click();
 
         URL.revokeObjectURL(url);
       }}
     >
-      Download Result
+      Download Result (CSV)
     </button>
   </div>
 ) : (
