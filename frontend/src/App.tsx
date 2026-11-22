@@ -700,6 +700,31 @@ function App() {
           </span>
         </div>
       ))}
+          {reportHistory.some((item, index) =>
+        reportHistory.findIndex(
+          (entry) =>
+            entry.message.trim().toLowerCase() ===
+            item.message.trim().toLowerCase()
+        ) !== index
+      ) && (
+        <div className="cp-result">
+          <strong>Similar Reports</strong>
+          {reportHistory
+            .filter((item, index) =>
+              reportHistory.findIndex(
+                (entry) =>
+                  entry.message.trim().toLowerCase() ===
+                  item.message.trim().toLowerCase()
+              ) !== index
+            )
+            .map((item, index) => (
+              <p key={index}>Repeated report: {item.message}</p>
+            ))}
+          <small>
+            Exact duplicate messages, ignoring capitalization and extra spaces.
+          </small>
+        </div>
+      )}
     </div>
   ) : (
     <p className="cp-note">
