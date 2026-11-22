@@ -79,6 +79,9 @@ function App() {
   const [loadedAt, setLoadedAt] = useState(0)
   const [tweet, setTweet] = useState('')
   const [prediction, setPrediction] = useState<Prediction | null>(null)
+  const [reportHistory, setReportHistory] = useState<
+    Array<{ message: string; prediction: Prediction }>
+  >([])
   const [submittedTweet, setSubmittedTweet] = useState('')
   const [predicting, setPredicting] = useState(false)
   const [predictError, setPredictError] = useState('')
@@ -151,6 +154,10 @@ function App() {
       }
       setSubmittedTweet(tweet.trim())
       setPrediction(data)
+      setReportHistory((history) => [
+        { message: tweet.trim(), prediction: data },
+        ...history,
+      ])
     } catch (error) {
       setPredictError(error instanceof Error ? error.message : 'Prediction failed')
     } finally {
@@ -629,18 +636,22 @@ function App() {
     <span className="cp-tag">Analysis History</span>
   </div>
 
-  {prediction ? (
-    <div className="cp-result">
-      <p><strong>Message:</strong> {submittedTweet}</p>
-      <small>Model output · class {prediction.prediction}</small>
-      <strong>{prediction.classification}</strong>
-      <span>
-        Decision score {prediction.decision_score.toFixed(3)} · threshold {prediction.threshold}
-      </span>
+  {reportHistory.length > 0 ? (
+    <div className="cp-report-list">
+      {reportHistory.map((item, index) => (
+        <div className="cp-result" key={index}>
+          <p><strong>Message:</strong> {item.message}</p>
+          <small>Model output · class {item.prediction.prediction}</small>
+          <strong>{item.prediction.classification}</strong>
+          <span>
+            Decision score {item.prediction.decision_score.toFixed(3)} · threshold {item.prediction.threshold}
+          </span>
+        </div>
+      ))}
     </div>
   ) : (
     <p className="cp-note">
-      Run an analysis first. Your latest result will appear here.
+      Run an analysis first. Your results will appear here.
     </p>
   )}
 </section>
