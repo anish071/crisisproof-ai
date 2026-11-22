@@ -278,6 +278,42 @@ function App() {
           <Icon name="chevron" size={16} />
         </div>
       </header>
+      {/* Project voice intro */}
+<div className="cp-intro">
+  <button
+    type="button"
+    className="cp-button"
+    onClick={() => {
+      const intro = new SpeechSynthesisUtterance(
+        "When disaster strikes, every message matters. CrisisProof AI helps bring important signals into focus. It uses machine learning to classify disaster-related messages and provides live earthquake updates. Analyze a message, explore the feed, and review your results. CrisisProof AI. Turning information into awareness. This is a prototype for information support, not emergency response."
+      )
+
+      const voices = window.speechSynthesis.getVoices()
+
+      const femaleVoice = voices.find((voice: SpeechSynthesisVoice) =>
+        /zira|aria|jenny|samantha|karen|victoria|female/i.test(voice.name)
+      )
+
+      const englishVoice = voices.find((voice: SpeechSynthesisVoice) =>
+        voice.lang.startsWith("en")
+      )
+
+      if (femaleVoice) {
+        intro.voice = femaleVoice
+      } else if (englishVoice) {
+        intro.voice = englishVoice
+      }
+
+      intro.rate = 0.95
+      intro.pitch = 1.05
+
+      window.speechSynthesis.cancel()
+      window.speechSynthesis.speak(intro)
+    }}
+  >
+    Play Launch Briefing
+  </button>
+</div>
 
       {apiError && (
         <div className="cp-error" role="alert">
