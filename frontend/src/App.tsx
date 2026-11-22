@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties, FormEvent } from 'react'
+import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
 import './App.css'
 import CommandRoom from './CommandRoom'
 import Icon from './Icon'
@@ -21,6 +23,8 @@ type EarthquakeEvent = {
   place: string
   time_utc: string
   source_url: string
+  longitude: number | null
+  latitude: number | null
 }
 
 type EarthquakeFeed = {
@@ -33,7 +37,52 @@ type EarthquakeSummary = {
   max_magnitude: number | null
   latest_event: EarthquakeEvent | null
 }
+function ImpactMap({ events }: { events: EarthquakeEvent[] }) {
+  const mappedEvents = events.filter(
+    (event) =>
+      typeof event.latitude === 'number' &&
+      typeof event.longitude === 'number'
+  )
 
+  const firstEvent = mappedEvents[0]
+  const center: [number, number] = firstEvent
+    ? [firstEvent.latitude!, firstEvent.longitude!]
+    : [20.5937, 78.9629]
+
+  return (
+    <MapContainer
+      center={center}
+      zoom={firstEvent ? 5 : 3}
+      scrollWheelZoom={false}
+      style={{ height: '360px', width: '100%' }}
+    >
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+
+      {mappedEvents.map((event) => (
+        <CircleMarker
+          key={event.event_id}
+          center={[event.latitude!, event.longitude!]}
+          radius={Math.max(5, (event.magnitude ?? 0) * 2)}
+          pathOptions={{
+            color: (event.magnitude ?? 0) >= 5 ? '#dc2626' : '#2563eb',
+            fillOpacity: 0.6,
+          }}
+        >
+          <Popup>
+            <strong>{event.place}</strong>
+            <br />
+            Magnitude: {event.magnitude ?? 'Unknown'}
+            <br />
+            {new Date(event.time_utc).toLocaleString()}
+          </Popup>
+        </CircleMarker>
+      ))}
+    </MapContainer>
+  )
+}
 type Prediction = {
   classification: string
   prediction: number
@@ -173,6 +222,8 @@ function App() {
   const maxMagnitude = summary?.max_magnitude
   const events = useMemo(() => feed?.events ?? [], [feed])
   const strongCount = events.filter((e) => (e.magnitude ?? 0) >= 5).length
+  const [feedSearch, setFeedSearch] = useState('');
+  const [minMagnitude, setMinMagnitude] = useState(''); 
 
   /* Everything below is computed from the events the API already returns. */
   const regions = useMemo(() => {
@@ -368,6 +419,27 @@ function App() {
                 rows={4}
                 maxLength={5000}
               />
+              <div className="cp-demo-scenarios">
+  <small>Demo scenarios:</small>
+  <button
+    type="button"
+    onClick={() => setTweet('A strong earthquake has damaged several buildings. People need help in the affected area.')}
+  >
+    Earthquake
+  </button>
+  <button
+    type="button"
+    onClick={() => setTweet('Severe flooding has trapped residents in their homes. Rescue support is urgently needed.')}
+  >
+    Flood
+  </button>
+  <button
+    type="button"
+    onClick={() => setTweet('A cyclone has damaged houses and caused power outages across the coastal area.')}
+  >
+    Cyclone
+  </button>
+</div>
               <div className="cp-form-row">
                 <small>{tweet.length} / 5000</small>
                 <button type="submit" disabled={predicting}>
@@ -663,8 +735,44 @@ function App() {
             {latest?.magnitude != null ? `LATEST M${latest.magnitude.toFixed(1)} · ` : ''}USGS · PAST 24 HOURS
           </span>
         </div>
+        <div className="cp-feed-filters">
+  <input
+    type="text"
+    value={feedSearch}
+    onChange={(e) => setFeedSearch(e.target.value)}
+    placeholder="Search earthquake location"
+    aria-label="Search earthquake location"
+  />
+
+  <select
+    value={minMagnitude}
+    onChange={(e) => setMinMagnitude(e.target.value)}
+    aria-label="Minimum earthquake magnitude"
+  >
+    <option value="">All magnitudes</option>
+    <option value="2">Magnitude 2+</option>
+    <option value="3">Magnitude 3+</option>
+    <option value="4">Magnitude 4+</option>
+    <option value="5">Magnitude 5+</option>
+  </select>
+</div>
+    <div className="cp-impact-map">
+  <h3>Earthquake Impact Map</h3>
+  <ImpactMap events={events} />
+  <small>Live USGS earthquake locations. Marker size reflects magnitude.</small>
+</div>
+
         <div className="cp-events">
-          {events.slice(0, 6).map((event) => (
+          {events
+  .filter((event) =>
+    event.place.toLowerCase().includes(feedSearch.trim().toLowerCase())
+  )
+  .filter((event) =>
+    minMagnitude === '' ||
+    (event.magnitude != null && event.magnitude >= Number(minMagnitude))
+  )
+  .slice(0, 6)
+  .map((event) => (
             <a className="cp-event" href={event.source_url} target="_blank" rel="noreferrer" key={event.event_id}>
               <strong className={levelFor(event.magnitude)}>
                 {event.magnitude != null ? event.magnitude.toFixed(1) : '—'}
