@@ -387,6 +387,22 @@ function App() {
     <p><strong>Message:</strong> {submittedTweet}</p>
     <small>Model output · class {prediction.prediction}</small>
     <strong>{prediction.classification}</strong>
+    <p>
+  <strong>Why this result?</strong>{' '}
+  {prediction.decision_score >= prediction.threshold
+    ? `The decision score (${prediction.decision_score.toFixed(3)}) meets or exceeds the threshold (${prediction.threshold}), so the model classifies this message as disaster-related.`
+    : `The decision score (${prediction.decision_score.toFixed(3)}) is below the threshold (${prediction.threshold}), so the model classifies this message as non-disaster.`}
+</p>
+  <div className="cp-triage">
+  <strong>Review priority: </strong>
+  {prediction.prediction === 1 ? 'High' : 'Low'}
+  <p>
+    {prediction.prediction === 1
+      ? 'This message is classified as disaster-related. Prioritize it for human review.'
+      : 'This message is classified as non-disaster. It may receive lower review priority.'}
+    {' '}This is a prototype suggestion, not an emergency assessment.
+  </p>
+</div>
     <span>
       Decision score {prediction.decision_score.toFixed(3)} · threshold {prediction.threshold}
     </span>
